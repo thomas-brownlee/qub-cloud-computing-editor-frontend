@@ -46,6 +46,7 @@ docker-develop-deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH != "develop"|| $CI_PIPELINE_SOURCE == "merge_request_event"' 
       when: never
+    - when: always
   tags: 
     - dockerindocker
 
@@ -65,5 +66,6 @@ docker-latest-deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH != "main" || $CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
+    - when: always
   tags: 
     - dockerindocker
