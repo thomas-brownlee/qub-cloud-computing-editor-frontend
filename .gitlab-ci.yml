@@ -3,7 +3,6 @@ stages:
 
 services:
   - name: docker:20.10-dind
-    command: ["--insecure-registry=repository.hal.davecutting.uk:5005"]
 
 
 # Using the prefix PIPE_VAR to denote the variable is made in the pipeline 
