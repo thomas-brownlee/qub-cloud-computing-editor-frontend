@@ -11,15 +11,12 @@ variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
   DOCKER_TLS_CERTDIR: ""           # Disable TLS
 
-  PIPE_VAR_DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_NAMESPACE"
-  PIPE_VAR_PIPELINE_TAG: "$CI_COMMIT_REF_SLUG"
-  PIPE_VAR_DEPLOYMENT_TAG: "latest"
-
 
 docker-build:
   stage: docker-build
   image: docker:20.10-dind
   variables:
+    DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     JOB_VAR_DOCKER_IMAGE: $PIPE_VAR_DOCKER_IMAGE:$PIPE_VAR_PIPELINE_TAG
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -30,20 +27,3 @@ docker-build:
     - docker push  $JOB_VAR_DOCKER_IMAGE
   tags: 
     - dockerindocker
-
-docker-addittional-Build:
-  stage: docker-build
-  image: docker:20.10
-  services:
-    - docker:20.10-dind
-  variables:
-    DOCKER_TLS_CERTDIR: ""  # Disable TLS
-    DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-  before_script:
-    # Log in to the GitLab container registry
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    # Build and push the Docker image
-    - echo "Building and pushing image $DOCKER_IMAGE"
-    - docker build -t "$DOCKER_IMAGE" .
-    - docker push "$DOCKER_IMAGE"
