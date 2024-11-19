@@ -1,15 +1,16 @@
 stages:
   - docker-build
-
+  
 services:
-  - docker:20.10-dind # DinD service
+  - name: docker:20.10-dind
+    command: ["--insecure-registry=repository.hal.davecutting.uk:5005"]
 
 
 # Using the prefix PIPE_VAR to denote the variable is made in the pipeline 
 variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
   DOCKER_TLS_CERTDIR: ""           # Disable TLS
-  
+
   PIPE_VAR_DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_NAMESPACE"
   PIPE_VAR_PIPELINE_TAG: "$CI_COMMIT_REF_SLUG"
   PIPE_VAR_DEPLOYMENT_TAG: "latest"
