@@ -21,9 +21,9 @@ docker-build:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - echo "Building image $JOB_VAR_DOCKER_IMAGE"
+    - echo "Building image $DOCKER_IMAGE"
     - docker info
-    - docker build -t $JOB_VAR_DOCKER_IMAGE .
-    - docker push  $JOB_VAR_DOCKER_IMAGE
+    - docker build -t $DOCKER_IMAGE .
+    - docker push  $DOCKER_IMAGE
   tags: 
     - dockerindocker
