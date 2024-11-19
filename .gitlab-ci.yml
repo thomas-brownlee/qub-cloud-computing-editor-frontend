@@ -11,8 +11,8 @@ variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
   DOCKER_TLS_CERTDIR: ""           # Disable TLS
   
-  PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE"
-  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE:$CI_COMMIT_SHORT_SHA"
+  PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAME"
+  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/test_$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA"
 
 # Job Builds the image to allow testing from its deployment enviroment
 docker-build:
@@ -46,6 +46,7 @@ docker-develop-deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH != "develop"|| $CI_PIPELINE_SOURCE == "merge_request_event"' 
       when: never
+    - when: always
   tags: 
     - dockerindocker
 
@@ -65,5 +66,6 @@ docker-latest-deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH != "main" || $CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
+    - when: always
   tags: 
     - dockerindocker
