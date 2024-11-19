@@ -14,6 +14,7 @@ variables:
   PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE"
   PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE:$CI_COMMIT_SHORT_SHA"
 
+# Job Builds the image to allow testing from its deployment enviroment
 docker-build:
   stage: docker-build
   image: docker:20.10-dind
@@ -29,6 +30,7 @@ docker-build:
   tags: 
     - dockerindocker
 
+# Deploys Develop image to allow for development of the image
 docker-develop-deploy:
   stage: docker-deploy
   image: docker:20.10-dind
@@ -42,11 +44,12 @@ docker-develop-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push  $JOB_VAR_DEPLOY
   rules:
-    - if: "$CI_COMMIT_BRANCH != develop"
+    - if: '$CI_COMMIT_BRANCH != "develop"|| $CI_PIPELINE_SOURCE == "merge_request_event"' 
       when: never
   tags: 
     - dockerindocker
 
+# Deploys the Latest image to be placed into prod
 docker-latest-deploy:
   stage: docker-deploy
   image: docker:20.10-dind
@@ -60,7 +63,7 @@ docker-latest-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push  $JOB_VAR_DEPLOY
   rules:
-    - if: "$CI_COMMIT_BRANCH != main"
+    - if: '$CI_COMMIT_BRANCH != "main" || $CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
   tags: 
     - dockerindocker
