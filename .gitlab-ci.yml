@@ -1,5 +1,6 @@
 stages:
   - docker-build
+  - docker-deploy
 
 services:
   - name: docker:20.10-dind
@@ -9,20 +10,57 @@ services:
 variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
   DOCKER_TLS_CERTDIR: ""           # Disable TLS
-
+  
+  PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE"
+  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE:$CI_COMMIT_SHORT_SHA"
 
 docker-build:
   stage: docker-build
   image: docker:20.10-dind
   variables:
-    DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-    JOB_VAR_DOCKER_IMAGE: $PIPE_VAR_DOCKER_IMAGE:$PIPE_VAR_PIPELINE_TAG
+    JOB_VAR_BASE_IMAGE: "$PIPE_VAR_DEPLOY_IMAGE_NAME:develop"
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - echo "Building image $DOCKER_IMAGE"
-    - docker info
-    - docker build -t $DOCKER_IMAGE .
-    - docker push  $DOCKER_IMAGE
+    - docker pull $JOB_VAR_BASE_IMAGE || true
+    - docker build --cache-from $JOB_VAR_BASE_IMAGE -t $PIPE_VAR_TEST_IMAGE .
+    - docker push  $PIPE_VAR_TEST_IMAGE
+  tags: 
+    - dockerindocker
+
+docker-develop-deploy:
+  stage: docker-deploy
+  image: docker:20.10-dind
+  variables:
+    JOB_VAR_DEPLOY: "$PIPE_VAR_DEPLOY_IMAGE_NAME:develop"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Deploying Develop Image"
+    - docker pull $PIPE_VAR_TEST_IMAGE || true
+    - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
+    - docker push  $JOB_VAR_DEPLOY
+  rules:
+    - if: "$CI_COMMIT_BRANCH != develop"
+      when: never
+  tags: 
+    - dockerindocker
+
+docker-latest-deploy:
+  stage: docker-deploy
+  image: docker:20.10-dind
+  variables:
+    JOB_VAR_DEPLOY: "$PIPE_VAR_DEPLOY_IMAGE_NAME:latest"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Deploying Develop Image"
+    - docker pull $PIPE_VAR_TEST_IMAGE || true
+    - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
+    - docker push  $JOB_VAR_DEPLOY
+  rules:
+    - if: "$CI_COMMIT_BRANCH != main"
+      when: never
   tags: 
     - dockerindocker
