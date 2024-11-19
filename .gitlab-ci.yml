@@ -11,8 +11,8 @@ variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
   DOCKER_TLS_CERTDIR: ""           # Disable TLS
   
-  PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE"
-  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAMESPACE:$CI_COMMIT_SHORT_SHA"
+  PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/QUBEditoron3000UI"
+  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/QUBeditoron3000UI:$CI_COMMIT_SHORT_SHA"
 
 # Job Builds the image to allow testing from its deployment enviroment
 docker-build:
