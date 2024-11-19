@@ -12,10 +12,12 @@ docker-build:
   image: docker:latest
   variables:
     JOB_VAR_DOCKER_IMAGE: $PIPE_VAR_DOCKER_IMAGE:$PIPE_VAR_PIPELINE_TAG
+    DOCKER_HOST: ""
   before_script:
+    - unset DOCKER_HOST
+    - docker info
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - export DOCKER_HOST=tcp://<remote-ip>:2375
     - echo "Building image $JOB_VAR_DOCKER_IMAGE"
     - docker build -t $JOB_VAR_DOCKER_IMAGE .
     - docker push  $JOB_VAR_DOCKER_IMAGE
