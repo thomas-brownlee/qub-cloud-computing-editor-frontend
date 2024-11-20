@@ -5,15 +5,14 @@ stages:
 services:
   - name: docker:20.10-dind
 
-
 # Using the prefix PIPE_VAR to denote the variable is made in the pipeline 
 variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
   DOCKER_TLS_CERTDIR: ""           # Disable TLS
   
   PIPE_VAR_DEPLOY_IMAGE_NAME: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAME"
-  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/test_$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA"
-
+  PIPE_VAR_TEST_IMAGE: "$CI_REGISTRY_IMAGE/test-$CI_PROJECT_NAME:test-$CI_COMMIT_SHORT_SHA"
+  
 # Job Builds the image to allow testing from its deployment enviroment
 docker-build:
   stage: docker-build
@@ -44,9 +43,9 @@ docker-develop-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push  $JOB_VAR_DEPLOY
   rules:
-    - if: '$CI_COMMIT_BRANCH != "develop"|| $CI_PIPELINE_SOURCE == "merge_request_event"' 
-      when: never
-    - when: always
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "merge_request_event"' 
+      when: on_success
+    - when: never
   tags: 
     - dockerindocker
 
@@ -64,8 +63,29 @@ docker-latest-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push  $JOB_VAR_DEPLOY
   rules:
-    - if: '$CI_COMMIT_BRANCH != "main" || $CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-    - when: always
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE != "merge_request_event"'
+      when: on_success
+    - when: never
   tags: 
     - dockerindocker
+  
+# Deploys the release image for branches named release/vd*.d*.d*
+docker-release-deploy:
+  stage: docker-deploy
+  image: docker:20.10-dind
+  variables:
+    JOB_VAR_DEPLOY: "$PIPE_VAR_DEPLOY_IMAGE_NAME:${CI_COMMIT_BRANCH#release/}"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Deploying Release Image for $CI_COMMIT_BRANCH"
+    - docker pull $PIPE_VAR_TEST_IMAGE || true
+    - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
+    - docker push $JOB_VAR_DEPLOY
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/vd[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
+      when: on_success
+    - when: never
+  tags:
+    - dockerindocker
+
