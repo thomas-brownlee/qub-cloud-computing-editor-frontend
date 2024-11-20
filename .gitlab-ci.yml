@@ -67,3 +67,24 @@ docker-latest-deploy:
       when: never
   tags: 
     - dockerindocker
+  
+# Deploys the release image for branches named release/vd*.d*.d*
+docker-release-deploy:
+  stage: docker-deploy
+  image: docker:20.10-dind
+  variables:
+    JOB_VAR_DEPLOY: "$PIPE_VAR_DEPLOY_IMAGE_NAME:${CI_COMMIT_BRANCH#release/}"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Deploying Release Image for $CI_COMMIT_BRANCH"
+    - docker pull $PIPE_VAR_TEST_IMAGE || true
+    - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
+    - docker push $JOB_VAR_DEPLOY
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/vd[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: on_success
+    - when: never
+  tags:
+    - dockerindocker
+
