@@ -5,7 +5,6 @@ stages:
 services:
   - name: docker:20.10-dind
 
-
 # Using the prefix PIPE_VAR to denote the variable is made in the pipeline 
 variables:
   DOCKER_HOST: "tcp://docker:2375"  # Use non-TLS endpoint
@@ -46,6 +45,7 @@ docker-develop-deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "merge_request_event"' 
       when: on_success
+    - when: never
   tags: 
     - dockerindocker
 
@@ -65,6 +65,7 @@ docker-latest-deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE != "merge_request_event"'
       when: on_success
+    - when: never
   tags: 
     - dockerindocker
   
