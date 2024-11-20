@@ -74,12 +74,14 @@ docker-release-deploy:
   stage: docker-deploy
   image: docker:20.10-dind
   variables:
-    JOB_VAR_DEPLOY: '$PIPE_VAR_DEPLOY_IMAGE_NAME:"${CI_COMMIT_BRANCH#release/}"'
+    RELEASE_NUM: "${CI_COMMIT_BRANCH#release/}"
+    JOB_VAR_DEPLOY: '$PIPE_VAR_DEPLOY_IMAGE_NAME:$RELEASE_NUM'
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - echo "Deploying Release Image for $CI_COMMIT_BRANCH"
     - echo $JOB_VAR_DEPLOY
+    - echo $RELEASE_NUM
     - echo "${CI_COMMIT_BRANCH#release/}"
     - docker pull $PIPE_VAR_TEST_IMAGE || true
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
