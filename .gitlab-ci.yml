@@ -79,6 +79,7 @@ docker-release-deploy:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - echo "Deploying Release Image for $CI_COMMIT_BRANCH"
+    - echo "${CI_COMMIT_BRANCH#release/}"
     - docker pull $PIPE_VAR_TEST_IMAGE || true
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push $JOB_VAR_DEPLOY
