@@ -44,8 +44,8 @@ docker-develop-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push  $JOB_VAR_DEPLOY
   rules:
-    - if: '$CI_COMMIT_BRANCH != "develop"|| $CI_PIPELINE_SOURCE == "merge_request_event"' 
-      when: never
+    - if: '$CI_COMMIT_BRANCH == "develop"|| $CI_PIPELINE_SOURCE != "merge_request_event"' 
+      when: on_success
   tags: 
     - dockerindocker
 
@@ -63,8 +63,8 @@ docker-latest-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push  $JOB_VAR_DEPLOY
   rules:
-    - if: '$CI_COMMIT_BRANCH != "main" || $CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_PIPELINE_SOURCE != "merge_request_event"'
+      when: on_success
   tags: 
     - dockerindocker
   
@@ -82,7 +82,7 @@ docker-release-deploy:
     - docker tag $PIPE_VAR_TEST_IMAGE $JOB_VAR_DEPLOY
     - docker push $JOB_VAR_DEPLOY
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^release\/vd[0-9]+\.[0-9]+\.[0-9]+$/ || $CI_PIPELINE_SOURCE != "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/vd[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
       when: on_success
     - when: never
   tags:
