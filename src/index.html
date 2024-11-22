@@ -7,6 +7,7 @@
 
 let wordcountURL = "http://alpha2.harbour.40324582.qpc.qubcloud.uk/";
 let charcountURL = "http://alpha2.kayo.40324582.qpc.qubcloud.uk/";
+let spellCheckURL   = "http://alpha2.reyna.40324582.qpc.qubcloud.uk/";
 
 
 function Wordcount()
@@ -39,12 +40,27 @@ function Charcount()
     xhttp.send();
 }
 
+function spellCheck()
+{
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var j = JSON.parse(this.response);
+            document.getElementById('output').value = j.answer;
+        }
+    };
+
+    let url = spellCheckURL + "/?text=" + encodeURI(document.getElementById('content').value);
+    xhttp.open("GET",url);
+    xhttp.send();
+}
 
 </script>
 
 <style type="text/css">
 body  {
     font-size: 150%;
+    background-color: #7FBEAB;
     font-family: monospace;
 }
 
@@ -52,7 +68,7 @@ body  {
 {
     font-family: Calibri, sans-serif;
     font-weight: lighter;
-    color: #505050;
+    color: #85877C;
     margin: 0.5em;
 }
 
@@ -79,8 +95,8 @@ body  {
 }
 
 .operation {
-    border: solid #d0d0d0 1px;
-    background-color: #f0f0f0;
+    border: solid rgb(0, 0, 0) 1px;
+    background-color: #85877C;
     padding: 1.5em;
     margin: 1em;
     width: 14em;
@@ -104,7 +120,7 @@ body  {
         <button class="operation" onclick="Charcount();">Character Count</button>
     </div>
     <div>
-        <button class="operation" onclick="">??</button>
+        <button class="operation" onclick="spellCheck();">Spell Check</button>
         <button class="operation" onclick="">??</button>
     </div>
     <div>
