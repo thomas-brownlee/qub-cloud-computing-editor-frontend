@@ -5,10 +5,10 @@
 
 <script type="text/javascript">
 
-let wordcountURL = "http://alpha2.harbour.40324582.qpc.qubcloud.uk/";
-let charcountURL = "http://alpha2.kayo.40324582.qpc.qubcloud.uk/";
-let spellCheckURL   = "http://alpha2.reyna.40324582.qpc.qubcloud.uk/";
-
+let wordcountURL = "http://alpha2.harbour.40324582.qpc.qubcloud.uk";
+let charcountURL = "http://alpha2.kayo.40324582.qpc.qubcloud.uk";
+let spellCheckURL   = "http://alpha2.reyna.40324582.qpc.qubcloud.uk";
+let fullStopCounterURL = "https://alpha2.omen.40324582.qpc.qubcloud.uk"
 
 function Wordcount()
 {
@@ -51,6 +51,21 @@ function spellCheck()
     };
 
     let url = spellCheckURL + "/?text=" + encodeURI(document.getElementById('content').value);
+    xhttp.open("GET",url);
+    xhttp.send();
+}
+
+function fullStopCounter()
+{
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var j = JSON.parse(this.response);
+            document.getElementById('output').value = j.answer;
+        }
+    };
+
+    let url = fullStopCounterURL + "/?text=" + encodeURI(document.getElementById('content').value);
     xhttp.open("GET",url);
     xhttp.send();
 }
@@ -121,7 +136,7 @@ body  {
     </div>
     <div>
         <button class="operation" onclick="spellCheck();">Spell Check</button>
-        <button class="operation" onclick="">??</button>
+        <button class="operation" onclick="fullStopCounter();">"FullStops Count"</button>
     </div>
     <div>
         <button class="operation" onclick="">??</button>
