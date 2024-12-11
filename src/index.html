@@ -6,6 +6,45 @@
 <script type="text/javascript">
 
 
+const apiBaseUrl = "http://127.0.0.1:9000"; 
+
+let currentRequest = null;
+
+function makeRequest(endpoint, callback) {
+    if (currentRequest) currentRequest.abort();
+
+    let xhttp = new XMLHttpRequest();
+    currentRequest = xhttp;
+
+    let url = apiBaseUrl + endpoint + "?text=" + encodeURI(content.value);
+
+    // Append the current query string if it already exists
+    let currentUrl = window.location.href;
+    let queryString = currentUrl.split('?')[1];
+    if (queryString) {
+        url += '&' + queryString;  // Keep existing query parameters
+    }
+
+    xhttp.onreadystatechange = () => {
+        if (xhttp.readyState == 4) {
+            currentRequest = null;
+            if (xhttp.status == 200) {
+                try { callback(JSON.parse(xhttp.response).answer); } 
+                catch (e) { output.value = `Error parsing: ${e}`; }
+            } else {
+                output.value = `Error: ${xhttp.status} - ${xhttp.statusText}`;
+            }
+        }
+    };
+    xhttp.open("GET", url);
+    xhttp.send();
+}
+
+
+
+const fullStopCounter = () => makeRequest("/api/full-stop-count", result => output.value = result);
+
+
 </script>
 
 <style type="text/css">
