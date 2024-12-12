@@ -50,6 +50,8 @@ function makeRequest(service_name, callback) {
         return alert("Content value is invalid. Ensure it is not empty or just spaces.");
     }
 
+    // disable the text area to prevent further editing
+    document.getElementById("content").disabled = true;
 
     if (currentRequest) currentRequest.abort();
     
@@ -65,6 +67,10 @@ function makeRequest(service_name, callback) {
     xhttp.onreadystatechange = () => {
         if (xhttp.readyState == 4) {
             currentRequest = null;
+
+            // re enable the text area to prevent further editing
+            document.getElementById("content").disabled = false;
+
             if (xhttp.status == 200) {
                 try { callback(JSON.parse(xhttp.response).answer); } 
                 catch (e) { output.value = `Error parsing: ${e}`; }
