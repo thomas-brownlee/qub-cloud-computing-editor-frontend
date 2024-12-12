@@ -99,6 +99,22 @@ function makeRequest(service_name, callback) {
     xhttp.send();
 }
 
+
+function addEntry(id, content){
+    const addUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
+
+    return fetch(addUrl, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error){
+                throw new Error(data.message);
+            }
+            alert("Text saved successfully.");
+        }
+    );
+}
+
+
 function saveToDatabase() {
     const identifier = document.getElementById("identifier").value;
     const content = document.getElementById("content").value;
