@@ -77,8 +77,6 @@ services:
       - docker-network
     ports:
       - "8089:80"
-    stdin_open: true  # Keep the STDIN open for interactive mode
-    tty: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
