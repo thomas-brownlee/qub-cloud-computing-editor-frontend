@@ -1,0 +1,97 @@
+name: "cluster "
+services:
+  front-end:
+    image: frontend:latest
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - docker-network
+
+
+  char-count:
+    image: repository.hal.davecutting.uk:5005/40324582/editor-charcount/editor-charcount:latest
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - docker-network
+
+
+  full-stop-count:
+    image: repository.hal.davecutting.uk:5005/40324582/editor-fullstop-count/editor-fullstop-count:latest
+    restart: always
+    ports:
+      - "8081:80"
+    networks:
+      - docker-network
+
+
+  count-palindrome:
+    image: repository.hal.davecutting.uk:5005/40324582/editor-palindrone-count/editor-palindrone-count:latest
+    restart: always
+    ports:
+      - "8082:80"
+    networks:
+      - docker-network
+
+
+  average-length:
+    image: repository.hal.davecutting.uk:5005/40324582/editor-average-length-of-word/editor-average-length-of-word:latest
+    restart: always
+    ports:
+      - "8083:80"
+    networks:
+      - docker-network
+
+
+  spell-checker:
+    image: repository.hal.davecutting.uk:5005/40324582/editor-spellchecker/editor-spellchecker:latest
+    restart: always
+    ports:
+      - "8084:80"
+    networks:
+      - docker-network
+
+
+  word-count:
+    image: repository.hal.davecutting.uk:5005/40324582/editor-wordcount/editor-wordcount:latest
+    restart: always
+    ports:
+      - "8085:80"
+    networks:
+      - docker-network
+
+  database:
+    image: repository.hal.davecutting.uk:5005/40324582/database-service/database-service:latest
+    restart: always
+    ports:
+      - "8086:80"
+    networks:
+      - docker-network
+
+  monitor:
+    image: repository.hal.davecutting.uk:5005/40324582/monitor-service/monitor-service:latest
+    restart: always
+    networks:
+      - docker-network
+    ports:
+      - "8089:80"
+    stdin_open: true  # Keep the STDIN open for interactive mode
+    tty: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  reverse-proxy:
+    image: reverseproxy:latest
+    restart: always
+    ports:
+      - "9000:5000"
+    networks:
+      - docker-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  docker-network:
+    driver: bridge
