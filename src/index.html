@@ -26,7 +26,7 @@ fetch('./service_info.JSON')
 
     })
     .catch(error => {
-        throw new Error(`Error loading JSON: ${response.status}`);
+        console.error(`Error loading JSON: ${error.message}`);
     });
 
 function makeRequest(service_name, callback) {
