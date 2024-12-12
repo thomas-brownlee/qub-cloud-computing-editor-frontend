@@ -9,6 +9,7 @@
 let apiBaseUrl = null; 
 let currentRequest = null;
 let service_info = null;
+let db_service_name = null;
 
 fetch('./service_info.json')
     .then(response => {
@@ -20,6 +21,7 @@ fetch('./service_info.json')
     .then(data => {
         service_info = data;
         apiBaseUrl = service_info.proxy_url;
+        db_service_name = service_info.database_service_name;
 
         // now the data is gathered enable the buttons
         document.querySelectorAll(".operation").forEach(button => button.disabled = false);
@@ -28,6 +30,17 @@ fetch('./service_info.json')
     .catch(error => {
         console.error(`Error loading JSON: ${error.message}`);
     });
+
+function isValidContent(value) {
+    if (!value || value.trim().length === 0) {
+        return false;
+    }
+    if (value.length > 7388) {
+        alert("Content exceeds the maximum allowed length of 7388 characters.");
+        return false;
+    }
+    return true;
+}
 
 function makeRequest(service_name, callback) {
     if (apiBaseUrl == null){
@@ -40,9 +53,19 @@ function makeRequest(service_name, callback) {
         console.error("Service name is not provided.");
         return
     }
-    if (currentRequest) currentRequest.abort();
 
+    if (!isValidContent(content.value)) {
+        // blocks the make request function if content is empty or only contains spaces
+        return alert("Text is invalid. Ensure it is not empty or just spaces.");
+    }
+
+    // disable the text area to prevent further editing
+    document.getElementById("content").disabled = true;
+
+    if (currentRequest) currentRequest.abort();
+    
     let xhttp = new XMLHttpRequest();
+
     currentRequest = xhttp;
 
     const url = `${apiBaseUrl}/api/${service_name}?text=${encodeURIComponent(content.value)}`;
@@ -53,9 +76,22 @@ function makeRequest(service_name, callback) {
     xhttp.onreadystatechange = () => {
         if (xhttp.readyState == 4) {
             currentRequest = null;
+
+            // re enable the text area to prevent further editing
+            document.getElementById("content").disabled = false;
+
             if (xhttp.status == 200) {
-                try { callback(JSON.parse(xhttp.response).answer); } 
-                catch (e) { output.value = `Error parsing: ${e}`; }
+                try {
+                    const response = JSON.parse(xhttp.response);
+                    if (response.error) {
+                        alert(response.string);
+                    } else {
+                        callback(response.answer);
+                    }
+                } 
+                catch (e) {
+                    output.value = `Error parsing: ${e}`;
+                }
             } else {
                 output.value = `Error: ${xhttp.status} - ${xhttp.statusText}`;
             }
@@ -65,7 +101,118 @@ function makeRequest(service_name, callback) {
     xhttp.send();
 }
 
-// diasable all buttons untill the relavent data is gathered
+function addEntry(identifier, content) {
+    const addUrl = `${apiBaseUrl}/api/${db_service_name}/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
+
+    return fetch(addUrl, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.message);
+            }
+            alert("Text saved successfully.");
+        })
+        .catch(error => {
+            console.error('There was an error with the add operation:', error);
+        });
+}
+
+function updateEntry(identifier, content) {
+    const deleteUrl = `${apiBaseUrl}/api/${db_service_name}/${encodeURIComponent(identifier)}/delete`;
+    fetch(deleteUrl, { method: 'DELETE' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.log(data.message)
+                throw new Error(data.message);
+            }
+            return addEntry(identifier, content)
+        })
+        .catch(error => {
+            console.error('There was an error with the update operation:', error);
+        });
+}
+
+
+function getEntries() {
+    const getUrl = `${apiBaseUrl}/api/${db_service_name}/ids`;
+
+    return fetch(getUrl, { method: 'GET' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.message); // If error exists in the data, throw it
+            }
+            return data; // Return the data if no error
+        })
+        .catch(error => {
+            console.error('There was an error with the fetch operation:', error);
+        });
+    }
+
+function release_db_lock(){
+    // releasing the locks on the content and identifier
+    document.getElementById("content").disabled = false;
+    document.getElementById("identifier").disabled = false;
+}
+
+
+function saveToDatabase() {
+    document.getElementById("identifier").disabled = true;
+    document.getElementById("content").disabled = true;
+
+    const identifier = document.getElementById("identifier").value;
+    const content = document.getElementById("content").value;
+
+    if (apiBaseUrl == null){
+        // blocks the make request function untill after service is connected to
+        release_db_lock()
+        console.error("API Base URL is not defined. Ensure service_info.JSON is loaded.");
+        return
+    }
+    
+    if (db_service_name == null){
+        // blocks the make request function from running if no service name is provided
+        release_db_lock()
+        console.error("Service name is not provided.");
+        return
+    }
+
+    if (!identifier || identifier.trim().length === 0) {
+        release_db_lock()
+        alert("Identifier is required.");
+        return;
+    }
+
+    if (!isValidContent(content)) {
+        alert("Text needs to be populated")
+        release_db_lock()
+        return;
+    }
+
+    getEntries()
+        .then(data => {
+            if (data && data.identifiers && data.identifiers.includes(identifier)) {
+                updateEntry(identifier, content)
+                release_db_lock()
+            } else if (data && data.identifiers && !data.identifiers.includes(identifier)) {
+                addEntry(identifier, content)
+                release_db_lock()
+            }
+        })
+        .catch(error => {
+            console.error("Error getting entries:", error);
+            release_db_lock()
+        });
+}
+
+
+// disable all buttons until the relevant data is gathered
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".operation").forEach(button => button.disabled = true);
 });
@@ -117,6 +264,14 @@ body  {
     letter-spacing: 0.1em;
 }
 
+#identifier {
+    font-size: 100%;
+    padding: 0.2em;
+    margin: 0.2em;
+    font-family: monospace;
+    letter-spacing: 0.1em;
+}
+
 .operation {
     border: solid rgb(0, 0, 0) 1px;
     background-color: #85877C;
@@ -131,6 +286,9 @@ body  {
 <div id="editor">
     <div id="logo">
         QUBeditotron3000
+    </div>
+    <div>
+        <input rows="1" cols="40" type="text" id="identifier" placeholder="Enter identifier..." />
     </div>
     <div>
         <textarea rows="5" cols="40" id="content">It was the best of cloud, it was the worst of cloud...</textarea>
@@ -150,8 +308,9 @@ body  {
         <button class="operation" onclick="countPalindrome()">Palindrome Count</button>
         <button class="operation" onclick="averageWordLength()">Averge Word Length</button>
     </div>
-
-    
+    <div>
+        <button class="operation" onclick="saveToDatabase();">Save to Database</button>
+    </div>
 </div>
 </body>
 
