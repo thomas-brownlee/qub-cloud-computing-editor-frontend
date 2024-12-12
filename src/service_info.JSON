@@ -1,0 +1,11 @@
+{
+    "proxy_url": "http://host.docker.internal:9000",
+    "serivce_info":{
+        "wordCount":"word-count",
+        "charCount":"char-count",
+        "spellCheck":"spell-check",
+        "fullStopCounter":"full-stop-count",
+        "averageWordLength":"average-word-length",
+        "countPalindrome":"count-palindrome"
+    }
+}
