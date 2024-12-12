@@ -155,6 +155,8 @@ function getEntries() {
         });
     }
 
+
+
 function release_db_lock(){
     // releasing the locks on the content and identifier
     document.getElementById("content").disabled = false;
@@ -208,6 +210,51 @@ function saveToDatabase() {
         .catch(error => {
             console.error("Error getting entries:", error);
             release_db_lock()
+        });
+}
+
+function fetchByIdentifier() {
+    document.getElementById("identifier").disabled = true;
+    document.getElementById("content").disabled = true;
+
+    const identifier = document.getElementById("identifier").value;
+
+    if (!apiBaseUrl || !db_service_name) {
+        console.error("API base URL or database service name is not set.");
+        release_db_lock();
+        return;
+    }
+
+    if (!identifier || identifier.trim().length === 0) {
+        release_db_lock();
+        alert("Identifier is required.");
+        return;
+    }
+
+    const fetchUrl = `${apiBaseUrl}/api/${db_service_name}/${encodeURIComponent(identifier)}`;
+
+    fetch(fetchUrl, { method: 'GET' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            release_db_lock();
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                console.error(`Error from API: ${data.message}`);
+            } else {
+                // Populate the textarea with the fetched data
+                const contentArea = document.getElementById("content");
+                contentArea.value = data.string_text || "";
+                alert("Text loaded successfully.");
+            }
+            release_db_lock();
+        })
+        .catch(error => {
+            console.error(`There was an error with the GET request: ${error}`);
+            release_db_lock();
         });
 }
 
@@ -310,6 +357,7 @@ body  {
     </div>
     <div>
         <button class="operation" onclick="saveToDatabase();">Save to Database</button>
+        <button class="operation" onclick="fetchByIdentifier();">Load from database</button>
     </div>
 </div>
 </body>
