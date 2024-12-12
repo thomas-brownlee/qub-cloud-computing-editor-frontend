@@ -9,6 +9,7 @@
 let apiBaseUrl = null; 
 let currentRequest = null;
 let service_info = null;
+let db_service_name = null;
 
 fetch('./service_info.json')
     .then(response => {
@@ -20,6 +21,7 @@ fetch('./service_info.json')
     .then(data => {
         service_info = data;
         apiBaseUrl = service_info.proxy_url;
+        db_service_name = service_info.database_service_name;
 
         // now the data is gathered enable the buttons
         document.querySelectorAll(".operation").forEach(button => button.disabled = false);
@@ -100,7 +102,7 @@ function makeRequest(service_name, callback) {
 }
 
 function addEntry(identifier, content) {
-    const addUrl = `${apiBaseUrl}/api/${service_info.database_service_name}/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
+    const addUrl = `${apiBaseUrl}/api/${db_service_name}/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
 
     return fetch(addUrl, { method: 'POST' })
         .then(response => response.json())
@@ -109,11 +111,14 @@ function addEntry(identifier, content) {
                 throw new Error(data.message);
             }
             alert("Text saved successfully.");
+        })
+        .catch(error => {
+            console.error('There was an error with the add operation:', error);
         });
 }
 
 function updateEntry(identifier, content) {
-    const deleteUrl = `${apiBaseUrl}/api/${service_info.database_service_name}/${encodeURIComponent(identifier)}/delete`;
+    const deleteUrl = `${apiBaseUrl}/api/${db_service_name}/${encodeURIComponent(identifier)}/delete`;
     fetch(deleteUrl, { method: 'DELETE' })
         .then(response => response.json())
         .then(data => {
@@ -122,12 +127,15 @@ function updateEntry(identifier, content) {
                 throw new Error(data.message);
             }
             return addEntry(identifier, content)
+        })
+        .catch(error => {
+            console.error('There was an error with the update operation:', error);
         });
 }
 
 
 function getEntries() {
-    const getUrl = `${apiBaseUrl}/api/${service_info.database_service_name}/ids`;
+    const getUrl = `${apiBaseUrl}/api/${db_service_name}/ids`;
 
     return fetch(getUrl, { method: 'GET' })
         .then(response => {
@@ -147,31 +155,60 @@ function getEntries() {
         });
     }
 
+function release_db_lock(){
+    // releasing the locks on the content and identifier
+    document.getElementById("content").disabled = false;
+    document.getElementById("identifier").disabled = false;
+}
+
+
 function saveToDatabase() {
+    document.getElementById("identifier").disabled = true;
+    document.getElementById("content").disabled = true;
+
     const identifier = document.getElementById("identifier").value;
     const content = document.getElementById("content").value;
 
+    if (apiBaseUrl == null){
+        // blocks the make request function untill after service is connected to
+        release_db_lock()
+        console.error("API Base URL is not defined. Ensure service_info.JSON is loaded.");
+        return
+    }
+    
+    if (db_service_name == null){
+        // blocks the make request function from running if no service name is provided
+        release_db_lock()
+        console.error("Service name is not provided.");
+        return
+    }
+
     if (!identifier || identifier.trim().length === 0) {
+        release_db_lock()
         alert("Identifier is required.");
         return;
     }
 
     if (!isValidContent(content)) {
+        alert("Text needs to be populated")
+        release_db_lock()
         return;
     }
 
     getEntries()
         .then(data => {
-            if (data && data.identifiers && data.identifiers.includes("hello")) {
+            if (data && data.identifiers && data.identifiers.includes(identifier)) {
                 updateEntry(identifier, content)
-            } else if (data && data.identifiers && !data.identifiers.includes("hello")) {
+                release_db_lock()
+            } else if (data && data.identifiers && !data.identifiers.includes(identifier)) {
                 addEntry(identifier, content)
+                release_db_lock()
             }
         })
         .catch(error => {
             console.error("Error getting entries:", error);
+            release_db_lock()
         });
-
 }
 
 
