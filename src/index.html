@@ -5,70 +5,78 @@
 
 <script type="text/javascript">
 
-let wordcountURL = "http://alpha2.harbour.40324582.qpc.qubcloud.uk";
-let charcountURL = "http://alpha2.kayo.40324582.qpc.qubcloud.uk";
-let spellCheckURL   = "http://alpha2.reyna.40324582.qpc.qubcloud.uk";
-let fullStopCounterURL = "https://alpha2.omen.40324582.qpc.qubcloud.uk"
 
-function Wordcount()
-{
+let apiBaseUrl = null; 
+let currentRequest = null;
+let service_info = null;
+
+fetch('./service_info.json')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        service_info = data;
+        apiBaseUrl = service_info.proxy_url;
+
+        // now the data is gathered enable the buttons
+        document.querySelectorAll(".operation").forEach(button => button.disabled = false);
+
+    })
+    .catch(error => {
+        console.error(`Error loading JSON: ${error.message}`);
+    });
+
+function makeRequest(service_name, callback) {
+    if (apiBaseUrl == null){
+        // blocks the make request function untill after service is connected to
+        console.error("API Base URL is not defined. Ensure service_info.JSON is loaded.");
+        return
+    }
+    if (service_name == null){
+        // blocks the make request function from running if no service name is provided
+        console.error("Service name is not provided.");
+        return
+    }
+    if (currentRequest) currentRequest.abort();
+
     let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var j = JSON.parse(this.response);
-            document.getElementById('output').value = j.answer;
+    currentRequest = xhttp;
+
+    const url = `${apiBaseUrl}/api/${service_name}?text=${encodeURIComponent(content.value)}`;
+
+    let currentUrl = window.location.href;
+    let queryString = currentUrl.split('?')[1];
+
+    xhttp.onreadystatechange = () => {
+        if (xhttp.readyState == 4) {
+            currentRequest = null;
+            if (xhttp.status == 200) {
+                try { callback(JSON.parse(xhttp.response).answer); } 
+                catch (e) { output.value = `Error parsing: ${e}`; }
+            } else {
+                output.value = `Error: ${xhttp.status} - ${xhttp.statusText}`;
+            }
         }
     };
-
-    let url = wordcountURL + "/?text=" + encodeURI(document.getElementById('content').value);
-    xhttp.open("GET",url);
+    xhttp.open("GET", url);
     xhttp.send();
 }
 
-function Charcount()
-{
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var j = JSON.parse(this.response);
-            document.getElementById('output').value = j.answer;
-        }
-    };
+// diasable all buttons untill the relavent data is gathered
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".operation").forEach(button => button.disabled = true);
+});
 
-    let url = charcountURL + "/?text=" + encodeURI(document.getElementById('content').value);
-    xhttp.open("GET",url);
-    xhttp.send();
-}
 
-function spellCheck()
-{
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var j = JSON.parse(this.response);
-            document.getElementById('output').value = j.answer;
-        }
-    };
-
-    let url = spellCheckURL + "/?text=" + encodeURI(document.getElementById('content').value);
-    xhttp.open("GET",url);
-    xhttp.send();
-}
-
-function fullStopCounter()
-{
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var j = JSON.parse(this.response);
-            document.getElementById('output').value = j.answer;
-        }
-    };
-
-    let url = fullStopCounterURL + "/?text=" + encodeURI(document.getElementById('content').value);
-    xhttp.open("GET",url);
-    xhttp.send();
-}
+const wordCount = () => makeRequest(service_info.functions_info.wordCount, result => output.value = result);
+const charCount = () => makeRequest(service_info.functions_info.charCount, result => output.value = result);
+const spellCheck = () => makeRequest(service_info.functions_info.spellCheck, result => output.value = result);
+const fullStopCounter = () => makeRequest(service_info.functions_info.fullStopCounter, result => output.value = result);
+const averageWordLength = () => makeRequest(service_info.functions_info.averageWordLength, result => output.value = result);
+const countPalindrome = () => makeRequest(service_info.functions_info.countPalindrome, result => output.value = result);
 
 </script>
 
@@ -131,25 +139,18 @@ body  {
         <input type="text" id="output" readonly="1" value="" />
     </div>
     <div>
-        <button class="operation" onclick="Wordcount();">Word Count</button>
-        <button class="operation" onclick="Charcount();">Character Count</button>
+        <button class="operation" onclick="wordCount();">Word Count</button>
+        <button class="operation" onclick="charCount();">Character Count</button>        
     </div>
     <div>
         <button class="operation" onclick="spellCheck();">Spell Check</button>
-        <button class="operation" onclick="fullStopCounter();">"FullStops Count"</button>
+        <button class="operation" onclick="fullStopCounter();">FullStops Count</button>
     </div>
     <div>
-        <button class="operation" onclick="">??</button>
-        <button class="operation" onclick="">??</button>
+        <button class="operation" onclick="countPalindrome()">Palindrome Count</button>
+        <button class="operation" onclick="averageWordLength()">Averge Word Length</button>
     </div>
-    <div>
-        <button class="operation" onclick="">??</button>
-        <button class="operation" onclick="">??</button>
-    </div>
-    <div>
-        <button class="operation" onclick="">??</button>
-        <button class="operation" onclick="">??</button>
-    </div>
+
     
 </div>
 </body>
