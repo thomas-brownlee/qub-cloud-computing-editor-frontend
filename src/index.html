@@ -99,25 +99,21 @@ function makeRequest(service_name, callback) {
     xhttp.send();
 }
 
-
-function addEntry(id, content){
+function addEntry(identifier, content) {
     const addUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
 
     return fetch(addUrl, { method: 'POST' })
         .then(response => response.json())
         .then(data => {
-            if (data.error){
+            if (data.error) {
                 throw new Error(data.message);
             }
             alert("Text saved successfully.");
-        }
-    );
+        });
 }
-
 
 function updateEntry(identifier, content) {
     const updateUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/edit`;
-
     return fetch(updateUrl, {
         method: 'PUT',
         headers: {
@@ -128,11 +124,27 @@ function updateEntry(identifier, content) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
+                console.log(data.message)
                 throw new Error(data.message);
             }
             alert("Text updated successfully.");
         });
 }
+
+
+function getEntrys() {
+    const updateUrl = `${apiBaseUrl}/api/database/ids`;
+    return fetch(updateUrl, {
+        method: 'GET'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.log(data.message)
+            }
+        });
+}
+
 
 function saveToDatabase() {
     const identifier = document.getElementById("identifier").value;
@@ -146,23 +158,11 @@ function saveToDatabase() {
     if (!isValidContent(content)) {
         return;
     }
+    console.log(getEntrys())
+    //TODO
 
-    const url = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
-
-    fetch(url, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.message);
-            } else {
-                alert("Text saved successfully.");
-            }
-        })
-        .catch(error => {
-            console.error("Error saving to database:", error);
-            alert("An error occurred while saving the text.");
-        });
 }
+
 
 // disable all buttons until the relevant data is gathered
 document.addEventListener("DOMContentLoaded", () => {
