@@ -9,6 +9,21 @@
 const apiBaseUrl = "http://host.docker.internal:9000"; 
 
 let currentRequest = null;
+let service_info = null;
+
+fetch('./service_info.JSON')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        service_info = data;
+    })
+    .catch(error => {
+        console.error('Error loading JSON:', error);
+    });
 
 function makeRequest(endpoint, callback) {
     if (currentRequest) currentRequest.abort();
@@ -18,12 +33,8 @@ function makeRequest(endpoint, callback) {
 
     let url = apiBaseUrl + endpoint + "?text=" + encodeURI(content.value);
 
-    // Append the current query string if it already exists
     let currentUrl = window.location.href;
     let queryString = currentUrl.split('?')[1];
-    if (queryString) {
-        url += '&' + queryString;  // Keep existing query parameters
-    }
 
     xhttp.onreadystatechange = () => {
         if (xhttp.readyState == 4) {
@@ -42,8 +53,12 @@ function makeRequest(endpoint, callback) {
 
 
 
+const wordCount = () => makeRequest("/api/word-count", result => output.value = result);
+const charCount = () => makeRequest("/api/char-count", result => output.value = result);
+const spellCheck = () => makeRequest("/api/spell-check", result => output.value = result);
 const fullStopCounter = () => makeRequest("/api/full-stop-count", result => output.value = result);
-
+const averageWordLength = () => makeRequest("/api/average-word-length", result => output.value = result);
+const countPalindrome = () => makeRequest("/api/count-palindrome", result => output.value = result);
 
 </script>
 
@@ -106,16 +121,16 @@ body  {
         <input type="text" id="output" readonly="1" value="" />
     </div>
     <div>
-        <button class="operation" onclick="Wordcount();">Word Count</button>
-        <button class="operation" onclick="Charcount();">Character Count</button>
+        <button class="operation" onclick="wordCount();">Word Count</button>
+        <button class="operation" onclick="charCount();">Character Count</button>        
     </div>
     <div>
         <button class="operation" onclick="spellCheck();">Spell Check</button>
         <button class="operation" onclick="fullStopCounter();">FullStops Count</button>
     </div>
     <div>
-        <button class="operation" onclick="">??</button>
-        <button class="operation" onclick="">??</button>
+        <button class="operation" onclick="countPalindrome()">Palindrome Count</button>
+        <button class="operation" onclick="averageWordLength()">Averge Word Length</button>
     </div>
     <div>
         <button class="operation" onclick="">??</button>
