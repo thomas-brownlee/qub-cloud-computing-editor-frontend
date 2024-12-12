@@ -166,7 +166,17 @@ function saveToDatabase() {
         return;
     }
 
-    console.log(getEntries())
+    getEntries()
+        .then(data => {
+            if (data && data.identifiers && data.identifiers.includes("hello")) {
+                updateEntry(identifier, content)
+            } else if (data && data.identifiers && !data.identifiers.includes("hello")) {
+                addEntry(identifier, content)
+            }
+        })
+        .catch(error => {
+            console.error("Error getting entries:", error);
+        });
 
 }
 
