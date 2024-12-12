@@ -31,9 +31,13 @@ fetch('./service_info.JSON')
 
 function makeRequest(service_name, callback) {
     if (apiBaseUrl == null){
+        // blocks the make request function untill after service is connected to
+        console.error("API Base URL is not defined. Ensure service_info.JSON is loaded.");
         return
     }
     if (service_name == null){
+        // blocks the make request function from running if no service name is provided
+        console.error("Service name is not provided.");
         return
     }
     if (currentRequest) currentRequest.abort();
