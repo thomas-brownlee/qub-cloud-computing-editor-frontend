@@ -1,7 +1,7 @@
 name: "cluster "
 services:
   front-end:
-    image: frontend:latest
+    image: repository.hal.davecutting.uk:5005/40324582/editor-frontend/editor-frontend:latest
     ports:
       - "80:80"
     restart: always
