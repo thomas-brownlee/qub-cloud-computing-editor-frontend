@@ -113,21 +113,15 @@ function addEntry(identifier, content) {
 }
 
 function updateEntry(identifier, content) {
-    const updateUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/edit`;
-    return fetch(updateUrl, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: content })
-    })
+    const deleteUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/delete`;
+    fetch(deleteUrl, { method: 'DELETE' })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
                 console.log(data.message)
                 throw new Error(data.message);
             }
-            alert("Text updated successfully.");
+            return addEntry(identifier, content)
         });
 }
 
