@@ -127,9 +127,9 @@ function updateEntry(identifier, content) {
 
 
 function getEntries() {
-    const updateUrl = `${apiBaseUrl}/api/database/ids`;
+    const getUrl = `${apiBaseUrl}/api/database/ids`;
 
-    return fetch(updateUrl, { method: 'GET' })
+    return fetch(getUrl, { method: 'GET' })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
