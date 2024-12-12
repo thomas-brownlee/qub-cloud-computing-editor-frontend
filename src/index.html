@@ -29,8 +29,15 @@ fetch('./service_info.json')
         console.error(`Error loading JSON: ${error.message}`);
     });
 
-function isValidContent(value) {
-    return value && value.trim().length > 0;
+    function isValidContent(value) {
+    if (!value || value.trim().length === 0) {
+        return false;
+    }
+    if (value.length > 7388) {
+        alert("Content exceeds the maximum allowed length of 7388 characters.");
+        return false;
+    }
+    return true;
 }
 
 function makeRequest(service_name, callback) {
