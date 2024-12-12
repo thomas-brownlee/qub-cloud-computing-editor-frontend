@@ -99,7 +99,37 @@ function makeRequest(service_name, callback) {
     xhttp.send();
 }
 
-// diasable all buttons untill the relavent data is gathered
+function saveToDatabase() {
+    const identifier = document.getElementById("identifier").value;
+    const content = document.getElementById("content").value;
+
+    if (!identifier || identifier.trim().length === 0) {
+        alert("Identifier is required.");
+        return;
+    }
+
+    if (!isValidContent(content)) {
+        return;
+    }
+
+    const url = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
+
+    fetch(url, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.message);
+            } else {
+                alert("Text saved successfully.");
+            }
+        })
+        .catch(error => {
+            console.error("Error saving to database:", error);
+            alert("An error occurred while saving the text.");
+        });
+}
+
+// disable all buttons until the relevant data is gathered
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".operation").forEach(button => button.disabled = true);
 });
@@ -151,6 +181,14 @@ body  {
     letter-spacing: 0.1em;
 }
 
+#identifier {
+    font-size: 100%;
+    padding: 0.2em;
+    margin: 0.2em;
+    font-family: monospace;
+    letter-spacing: 0.1em;
+}
+
 .operation {
     border: solid rgb(0, 0, 0) 1px;
     background-color: #85877C;
@@ -170,6 +208,9 @@ body  {
         <textarea rows="5" cols="40" id="content">It was the best of cloud, it was the worst of cloud...</textarea>
     </div>
     <div>
+        <input type="text" id="identifier" placeholder="Enter identifier..." />
+    </div>
+    <div>
         <input type="text" id="output" readonly="1" value="" />
     </div>
     <div>
@@ -184,8 +225,9 @@ body  {
         <button class="operation" onclick="countPalindrome()">Palindrome Count</button>
         <button class="operation" onclick="averageWordLength()">Averge Word Length</button>
     </div>
-
-    
+    <div>
+        <button class="operation" onclick="saveToDatabase();">Save to Database</button>
+    </div>
 </div>
 </body>
 
