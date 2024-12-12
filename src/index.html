@@ -29,7 +29,7 @@ fetch('./service_info.json')
         console.error(`Error loading JSON: ${error.message}`);
     });
 
-    function isValidContent(value) {
+function isValidContent(value) {
     if (!value || value.trim().length === 0) {
         return false;
     }
