@@ -6,8 +6,7 @@
 <script type="text/javascript">
 
 
-const apiBaseUrl = "http://host.docker.internal:9000"; 
-
+let apiBaseUrl = null; 
 let currentRequest = null;
 let service_info = null;
 
@@ -20,18 +19,25 @@ fetch('./service_info.JSON')
     })
     .then(data => {
         service_info = data;
+        apiBaseUrl = service_info.proxy_url
     })
     .catch(error => {
-        console.error('Error loading JSON:', error);
+        throw new Error(`Error loading JSON: ${response.status}`);
     });
 
-function makeRequest(endpoint, callback) {
+function makeRequest(service_name, callback) {
+    if (apiBaseUrl == null){
+        return
+    }
+    if (service_name == null){
+        return
+    }
     if (currentRequest) currentRequest.abort();
 
     let xhttp = new XMLHttpRequest();
     currentRequest = xhttp;
 
-    let url = apiBaseUrl + endpoint + "?text=" + encodeURI(content.value);
+    let url = apiBaseUrl +"/api/"+ service_name + "?text=" + encodeURI(content.value);
 
     let currentUrl = window.location.href;
     let queryString = currentUrl.split('?')[1];
@@ -53,12 +59,12 @@ function makeRequest(endpoint, callback) {
 
 
 
-const wordCount = () => makeRequest("/api/word-count", result => output.value = result);
-const charCount = () => makeRequest("/api/char-count", result => output.value = result);
-const spellCheck = () => makeRequest("/api/spell-check", result => output.value = result);
-const fullStopCounter = () => makeRequest("/api/full-stop-count", result => output.value = result);
-const averageWordLength = () => makeRequest("/api/average-word-length", result => output.value = result);
-const countPalindrome = () => makeRequest("/api/count-palindrome", result => output.value = result);
+const wordCount = () => makeRequest(service_info.functions_info.wordCount, result => output.value = result);
+const charCount = () => makeRequest(service_info.functions_info.charCount, result => output.value = result);
+const spellCheck = () => makeRequest(service_info.functions_info.spellCheck, result => output.value = result);
+const fullStopCounter = () => makeRequest(service_info.functions_info.fullStopCounter, result => output.value = result);
+const averageWordLength = () => makeRequest(service_info.functions_info.averageWordLength, result => output.value = result);
+const countPalindrome = () => makeRequest(service_info.functions_info.countPalindrome, result => output.value = result);
 
 </script>
 
