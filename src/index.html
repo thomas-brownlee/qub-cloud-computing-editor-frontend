@@ -29,6 +29,10 @@ fetch('./service_info.json')
         console.error(`Error loading JSON: ${error.message}`);
     });
 
+function isValidContent(value) {
+    return value && value.trim().length > 0;
+}
+
 function makeRequest(service_name, callback) {
     if (apiBaseUrl == null){
         // blocks the make request function untill after service is connected to
@@ -40,9 +44,17 @@ function makeRequest(service_name, callback) {
         console.error("Service name is not provided.");
         return
     }
-    if (currentRequest) currentRequest.abort();
 
+    if (!isValidContent(content.value)) {
+        // blocks the make request function if content is empty or only contains spaces
+        return alert("Content value is invalid. Ensure it is not empty or just spaces.");
+    }
+
+
+    if (currentRequest) currentRequest.abort();
+    
     let xhttp = new XMLHttpRequest();
+
     currentRequest = xhttp;
 
     const url = `${apiBaseUrl}/api/${service_name}?text=${encodeURIComponent(content.value)}`;
