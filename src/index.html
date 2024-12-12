@@ -45,7 +45,7 @@ function makeRequest(service_name, callback) {
     let xhttp = new XMLHttpRequest();
     currentRequest = xhttp;
 
-    let url = apiBaseUrl +"/api/"+ service_name + "?text=" + encodeURI(content.value);
+    const url = `${apiBaseUrl}/api/${service_name}?text=${encodeURIComponent(content.value)}`;
 
     let currentUrl = window.location.href;
     let queryString = currentUrl.split('?')[1];
@@ -150,14 +150,7 @@ body  {
         <button class="operation" onclick="countPalindrome()">Palindrome Count</button>
         <button class="operation" onclick="averageWordLength()">Averge Word Length</button>
     </div>
-    <div>
-        <button class="operation" onclick="">??</button>
-        <button class="operation" onclick="">??</button>
-    </div>
-    <div>
-        <button class="operation" onclick="">??</button>
-        <button class="operation" onclick="">??</button>
-    </div>
+
     
 </div>
 </body>
