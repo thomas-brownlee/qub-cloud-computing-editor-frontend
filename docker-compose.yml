@@ -36,7 +36,7 @@ services:
       - docker-network
 
 
-  average-length:
+  average-word-length:
     image: repository.hal.davecutting.uk:5005/40324582/editor-average-length-of-word/editor-average-length-of-word:latest
     restart: always
     ports:
@@ -45,7 +45,7 @@ services:
       - docker-network
 
 
-  spell-checker:
+  spell-check:
     image: repository.hal.davecutting.uk:5005/40324582/editor-spellchecker/editor-spellchecker:latest
     restart: always
     ports:
