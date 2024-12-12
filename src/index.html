@@ -132,19 +132,26 @@ function updateEntry(identifier, content) {
 }
 
 
-function getEntrys() {
+function getEntries() {
     const updateUrl = `${apiBaseUrl}/api/database/ids`;
-    return fetch(updateUrl, {
-        method: 'GET'
-    })
-        .then(response => response.json())
+
+    return fetch(updateUrl, { method: 'GET' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
-                console.log(data.message)
+                throw new Error(data.message); // If error exists in the data, throw it
             }
+            return data; // Return the data if no error
+        })
+        .catch(error => {
+            console.error('There was an error with the fetch operation:', error);
         });
-}
-
+    }
 
 function saveToDatabase() {
     const identifier = document.getElementById("identifier").value;
@@ -158,8 +165,8 @@ function saveToDatabase() {
     if (!isValidContent(content)) {
         return;
     }
-    console.log(getEntrys())
-    //TODO
+
+    console.log(getEntries())
 
 }
 
