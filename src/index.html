@@ -11,7 +11,7 @@ let currentRequest = null;
 let service_info = null;
 let db_service_name = null;
 
-fetch('./service_info.json')
+fetch('./front_end_config.json')
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
