@@ -19,7 +19,11 @@ fetch('./service_info.JSON')
     })
     .then(data => {
         service_info = data;
-        apiBaseUrl = service_info.proxy_url
+        apiBaseUrl = service_info.proxy_url;
+
+        // now the data is gathered enable the buttons
+        document.querySelectorAll(".operation").forEach(button => button.disabled = false);
+
     })
     .catch(error => {
         throw new Error(`Error loading JSON: ${response.status}`);
@@ -57,6 +61,10 @@ function makeRequest(service_name, callback) {
     xhttp.send();
 }
 
+// diasable all buttons untill the relavent data is gathered
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".operation").forEach(button => button.disabled = true);
+});
 
 
 const wordCount = () => makeRequest(service_info.functions_info.wordCount, result => output.value = result);
