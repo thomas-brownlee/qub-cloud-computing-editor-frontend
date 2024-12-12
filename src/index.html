@@ -115,6 +115,25 @@ function addEntry(id, content){
 }
 
 
+function updateEntry(identifier, content) {
+    const updateUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/edit`;
+
+    return fetch(updateUrl, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: content })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.message);
+            }
+            alert("Text updated successfully.");
+        });
+}
+
 function saveToDatabase() {
     const identifier = document.getElementById("identifier").value;
     const content = document.getElementById("content").value;
