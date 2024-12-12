@@ -100,7 +100,7 @@ function makeRequest(service_name, callback) {
 }
 
 function addEntry(identifier, content) {
-    const addUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
+    const addUrl = `${apiBaseUrl}/api/${service_info.database_service_name}/${encodeURIComponent(identifier)}/new?text=${encodeURIComponent(content)}`;
 
     return fetch(addUrl, { method: 'POST' })
         .then(response => response.json())
@@ -113,7 +113,7 @@ function addEntry(identifier, content) {
 }
 
 function updateEntry(identifier, content) {
-    const deleteUrl = `${apiBaseUrl}/api/database/${encodeURIComponent(identifier)}/delete`;
+    const deleteUrl = `${apiBaseUrl}/api/${service_info.database_service_name}/${encodeURIComponent(identifier)}/delete`;
     fetch(deleteUrl, { method: 'DELETE' })
         .then(response => response.json())
         .then(data => {
@@ -127,7 +127,7 @@ function updateEntry(identifier, content) {
 
 
 function getEntries() {
-    const getUrl = `${apiBaseUrl}/api/database/ids`;
+    const getUrl = `${apiBaseUrl}/api/${service_info.database_service_name}/ids`;
 
     return fetch(getUrl, { method: 'GET' })
         .then(response => {
