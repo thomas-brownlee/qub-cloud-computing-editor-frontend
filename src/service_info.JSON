@@ -7,5 +7,6 @@
         "fullStopCounter":"full-stop-count",
         "averageWordLength":"average-word-length",
         "countPalindrome":"count-palindrome"
-    }
+    },
+    "database_service_name":"database"
 }
